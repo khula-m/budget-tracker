@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,57 +9,58 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-    
+    <!-- Login/Signup Section -->
     <div id="auth-section" class="login-container">
         <div class="login-card">
             <h2 class="login-title">Personal Finance Manager</h2>
-            
-            
+
+            <!-- Success message after signup -->
             <div id="success-message" class="success-message">
                 Account created successfully! Please log in to continue.
             </div>
-            
-        
+
+            <!-- Login Form -->
             <form id="login-form" class="login-form">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" placeholder="Enter your username" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" placeholder="Enter your password" required>
                 </div>
-                
+
                 <button type="submit" class="login-btn">Sign In</button>
                 <div class="signup-link">
                     Don't have an account? <a href="#" id="show-signup">Sign Up</a>
                 </div>
             </form>
-            
+
             <!-- Signup Form -->
             <form id="signup-form" class="login-form hidden">
                 <div class="form-group">
                     <label for="signup-name">Full Name</label>
                     <input type="text" id="signup-name" placeholder="Enter your full name" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="signup-username">Username</label>
                     <input type="text" id="signup-username" placeholder="Choose a username" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="signup-password">Password</label>
                     <input type="password" id="signup-password" placeholder="Create a password" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="confirm-password">Confirm Password</label>
                     <input type="password" id="confirm-password" placeholder="Confirm your password" required>
                 </div>
-                
+
                 <button type="submit" class="login-btn">Create Account</button>
                 <div class="signup-link">
                     Already have an account? <a href="#" id="show-login">Sign In</a>
@@ -66,8 +68,8 @@
             </form>
         </div>
     </div>
-    
-    
+
+    <!-- Main Application Section -->
     <div id="app-section" class="container hidden">
         <header>
             <div class="header-content">
@@ -82,7 +84,7 @@
                 </div>
             </div>
         </header>
-        
+
         <div class="main-content">
             <div class="input-section">
                 <div class="card">
@@ -95,12 +97,12 @@
                                 <option value="expense">Expense</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="amount">Amount</label>
                             <input type="number" id="amount" placeholder="Enter amount" min="0.01" step="0.01" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="category">Category</label>
                             <select id="category" required>
@@ -123,21 +125,21 @@
                                 </optgroup>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="date">Date</label>
                             <input type="date" id="date" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="description">Description (Optional)</label>
                             <input type="text" id="description" placeholder="Enter description">
                         </div>
-                        
+
                         <button type="submit" class="btn-success">Add Transaction</button>
                     </form>
                 </div>
-                
+
                 <div class="card">
                     <h2 class="card-title">Set Budget</h2>
                     <form id="budget-form">
@@ -154,17 +156,18 @@
                                 <option value="other-expense">Other</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="budget-amount">Budget Amount</label>
-                            <input type="number" id="budget-amount" placeholder="Enter budget amount" min="0.01" step="0.01" required>
+                            <input type="number" id="budget-amount" placeholder="Enter budget amount" min="0.01"
+                                step="0.01" required>
                         </div>
-                        
+
                         <button type="submit" class="btn-success">Set Budget</button>
                     </form>
                 </div>
             </div>
-            
+
             <div class="dashboard-section">
                 <div class="summary-cards">
                     <div class="summary-card income">
@@ -172,20 +175,20 @@
                         <div class="summary-value" id="total-income">R3,200.00</div>
                         <div class="summary-label">This Month</div>
                     </div>
-                    
+
                     <div class="summary-card expenses">
                         <div class="summary-label">Total Expenses</div>
                         <div class="summary-value" id="total-expenses">R750.00</div>
                         <div class="summary-label">This Month</div>
                     </div>
-                    
+
                     <div class="summary-card balance">
                         <div class="summary-label">Remaining Balance</div>
                         <div class="summary-value" id="remaining-balance">R2,450.00</div>
                         <div class="summary-label">This Month</div>
                     </div>
                 </div>
-                
+
                 <div class="dashboard">
                     <div class="card">
                         <h2 class="card-title">Spending by Category</h2>
@@ -193,7 +196,7 @@
                             <canvas id="category-chart"></canvas>
                         </div>
                     </div>
-                    
+
                     <div class="card">
                         <h2 class="card-title">Budget Status</h2>
                         <div class="chart-container">
@@ -201,18 +204,18 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <h2 class="card-title">Recent Transactions</h2>
                     <div class="transactions" id="transactions-list">
-                        
+                        <!-- Transactions will be populated by JavaScript -->
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <h2 class="card-title">Budget Overview</h2>
                     <div class="budget-status" id="budget-status">
-                        
+                        <!-- Budget status will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
@@ -221,4 +224,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
