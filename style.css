@@ -27,6 +27,99 @@ body {
     padding: 20px;
 }
 
+/* Login Page Styles */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+
+.login-card {
+    background: white;
+    border-radius: 10px;
+    padding: 40px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--dark);
+}
+
+.success-message {
+    background-color: var(--secondary);
+    color: white;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    text-align: center;
+    display: none;
+}
+
+.login-form .form-group {
+    margin-bottom: 20px;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border 0.3s;
+}
+
+.login-form input:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.login-btn {
+    width: 100%;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    margin-bottom: 15px;
+}
+
+.login-btn:hover {
+    background-color: #2980b9;
+}
+
+.signup-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.signup-link a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+/* Main App Styles */
 header {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
@@ -64,6 +157,22 @@ h1 {
     justify-content: center;
     font-weight: bold;
     color: var(--primary);
+}
+
+.logout-btn {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    margin-left: 15px;
+}
+
+.logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .main-content {
@@ -278,6 +387,10 @@ button:hover {
     justify-content: space-between;
     font-size: 0.85rem;
     color: var(--gray);
+}
+
+.hidden {
+    display: none !important;
 }
 
 @media (max-width: 992px) {
