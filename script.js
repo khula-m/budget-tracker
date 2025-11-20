@@ -4,7 +4,8 @@ const DB = {
     init: function() {
         if (!localStorage.getItem('users')) {
             localStorage.setItem('users', JSON.stringify([
-                { UserID: 1, Name: 'John Smith', Password: 'password123' }
+                { UserID: 1, Name: 'John Smith', Username: 'john', Password: 'password123' },
+                { UserID: 2, Name: 'Junior Moya', Username: 'junior', Password: 'password123' }
             ]));
         }
         
@@ -14,7 +15,10 @@ const DB = {
                 { ExpenseID: 2, UserID: 1, Amount: 3200, Category: 'salary', Date: '2023-06-05', Description: 'Monthly salary' },
                 { ExpenseID: 3, UserID: 1, Amount: 250, Category: 'food', Date: '2023-06-10', Description: 'Groceries' },
                 { ExpenseID: 4, UserID: 1, Amount: 80, Category: 'transportation', Date: '2023-06-12', Description: 'Gas' },
-                { ExpenseID: 5, UserID: 1, Amount: 150, Category: 'entertainment', Date: '2023-06-18', Description: 'Dinner and movie' }
+                { ExpenseID: 5, UserID: 1, Amount: 150, Category: 'entertainment', Date: '2023-06-18', Description: 'Dinner and movie' },
+                { ExpenseID: 6, UserID: 2, Amount: 1500, Category: 'salary', Date: '2023-06-01', Description: 'Monthly salary' },
+                { ExpenseID: 7, UserID: 2, Amount: 800, Category: 'housing', Date: '2023-06-05', Description: 'Rent' },
+                { ExpenseID: 8, UserID: 2, Amount: 200, Category: 'food', Date: '2023-06-08', Description: 'Groceries' }
             ]));
         }
         
@@ -25,25 +29,51 @@ const DB = {
                 { BudgetID: 3, UserID: 1, Category: 'transportation', BudgetAmount: 200 },
                 { BudgetID: 4, UserID: 1, Category: 'entertainment', BudgetAmount: 300 },
                 { BudgetID: 5, UserID: 1, Category: 'healthcare', BudgetAmount: 150 },
-                { BudgetID: 6, UserID: 1, Category: 'utilities', BudgetAmount: 250 }
+                { BudgetID: 6, UserID: 1, Category: 'utilities', BudgetAmount: 250 },
+                { BudgetID: 7, UserID: 2, Category: 'housing', BudgetAmount: 800 },
+                { BudgetID: 8, UserID: 2, Category: 'food', BudgetAmount: 300 },
+                { BudgetID: 9, UserID: 2, Category: 'transportation', BudgetAmount: 150 }
             ]));
         }
     },
     
+    // Get all users
+    getUsers: function() {
+        return JSON.parse(localStorage.getItem('users') || '[]');
+    },
+    
+    // Add a new user
+    addUser: function(user) {
+        const users = this.getUsers();
+        const newId = users.length > 0 ? Math.max(...users.map(u => u.UserID)) + 1 : 1;
+        
+        const newUser = {
+            UserID: newId,
+            Name: user.Name,
+            Username: user.Username,
+            Password: user.Password
+        };
+        
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        return newUser;
+    },
+    
     // Get all expenses for the current user
-    getExpenses: function() {
+    getExpenses: function(userId) {
         const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
-        return expenses.filter(expense => expense.UserID === 1);
+        return expenses.filter(expense => expense.UserID === userId);
     },
     
     // Add a new expense/income
-    addExpense: function(expense) {
+    addExpense: function(expense, userId) {
         const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
         const newId = expenses.length > 0 ? Math.max(...expenses.map(e => e.ExpenseID)) + 1 : 1;
         
         const newExpense = {
             ExpenseID: newId,
-            UserID: 1,
+            UserID: userId,
             Amount: expense.Amount,
             Category: expense.Category,
             Date: expense.Date,
@@ -57,15 +87,15 @@ const DB = {
     },
     
     // Get all budgets for the current user
-    getBudgets: function() {
+    getBudgets: function(userId) {
         const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
-        return budgets.filter(budget => budget.UserID === 1);
+        return budgets.filter(budget => budget.UserID === userId);
     },
     
     // Add or update a budget
-    setBudget: function(category, amount) {
+    setBudget: function(category, amount, userId) {
         const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
-        const existingBudget = budgets.find(b => b.Category === category && b.UserID === 1);
+        const existingBudget = budgets.find(b => b.Category === category && b.UserID === userId);
         
         if (existingBudget) {
             existingBudget.BudgetAmount = amount;
@@ -73,7 +103,7 @@ const DB = {
             const newId = budgets.length > 0 ? Math.max(...budgets.map(b => b.BudgetID)) + 1 : 1;
             budgets.push({
                 BudgetID: newId,
-                UserID: 1,
+                UserID: userId,
                 Category: category,
                 BudgetAmount: amount
             });
@@ -83,28 +113,193 @@ const DB = {
     }
 };
 
+// Authentication and session management
+const Auth = {
+    currentUser: null,
+    
+    // Check if user is logged in
+    isLoggedIn: function() {
+        return localStorage.getItem('currentUser') !== null;
+    },
+    
+    // Get current user
+    getCurrentUser: function() {
+        if (this.currentUser) return this.currentUser;
+        
+        const userData = localStorage.getItem('currentUser');
+        if (userData) {
+            this.currentUser = JSON.parse(userData);
+            return this.currentUser;
+        }
+        
+        return null;
+    },
+    
+    // Login user
+    login: function(username, password) {
+        const users = DB.getUsers();
+        const user = users.find(u => u.Username === username && u.Password === password);
+        
+        if (user) {
+            this.currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            return true;
+        }
+        
+        return false;
+    },
+    
+    // Register new user
+    register: function(name, username, password) {
+        const users = DB.getUsers();
+        
+        // Check if username already exists
+        if (users.find(u => u.Username === username)) {
+            return false;
+        }
+        
+        // Add new user
+        const newUser = DB.addUser({ Name: name, Username: username, Password: password });
+        return true;
+    },
+    
+    // Logout user
+    logout: function() {
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
+    }
+};
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize database
     DB.init();
     
+    // Check if user is already logged in
+    if (Auth.isLoggedIn()) {
+        showApp();
+    } else {
+        showAuth();
+    }
+    
     // Set today's date as default in the date input
     document.getElementById('date').valueAsDate = new Date();
     
-    // Load initial data
-    updateDashboard();
-    updateTransactions();
-    updateBudgetStatus();
-    
-    // Add event listeners
-    document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
-    document.getElementById('budget-form').addEventListener('submit', handleBudgetSubmit);
+    // Add event listeners for authentication
+    document.getElementById('login-form').addEventListener('submit', handleLogin);
+    document.getElementById('signup-form').addEventListener('submit', handleSignup);
+    document.getElementById('show-signup').addEventListener('click', showSignupForm);
+    document.getElementById('show-login').addEventListener('click', showLoginForm);
+    document.getElementById('logout-btn').addEventListener('click', handleLogout);
     
     // Update category options based on transaction type
     document.getElementById('transaction-type').addEventListener('change', function() {
         updateCategoryOptions();
     });
 });
+
+// Show authentication section
+function showAuth() {
+    document.getElementById('auth-section').classList.remove('hidden');
+    document.getElementById('app-section').classList.add('hidden');
+}
+
+// Show main application
+function showApp() {
+    document.getElementById('auth-section').classList.add('hidden');
+    document.getElementById('app-section').classList.remove('hidden');
+    
+    const user = Auth.getCurrentUser();
+    if (user) {
+        // Update user info in the header
+        document.getElementById('user-name').textContent = user.Name;
+        document.getElementById('user-avatar').textContent = getInitials(user.Name);
+        
+        // Load user-specific data
+        updateDashboard();
+        updateTransactions();
+        updateBudgetStatus();
+        
+        // Add event listeners for app functionality
+        document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
+        document.getElementById('budget-form').addEventListener('submit', handleBudgetSubmit);
+    }
+}
+
+// Get user initials for avatar
+function getInitials(name) {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+}
+
+// Show signup form
+function showSignupForm(e) {
+    e.preventDefault();
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('signup-form').classList.remove('hidden');
+    document.getElementById('success-message').style.display = 'none';
+}
+
+// Show login form
+function showLoginForm(e) {
+    e.preventDefault();
+    document.getElementById('signup-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('success-message').style.display = 'none';
+}
+
+// Handle login form submission
+function handleLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    if (Auth.login(username, password)) {
+        showApp();
+    } else {
+        alert('Invalid username or password. Please try again.');
+    }
+}
+
+// Handle signup form submission
+function handleSignup(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('signup-name').value;
+    const username = document.getElementById('signup-username').value;
+    const password = document.getElementById('signup-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match. Please try again.');
+        return;
+    }
+    
+    if (Auth.register(name, username, password)) {
+        // Show success message and switch to login form
+        document.getElementById('success-message').style.display = 'block';
+        document.getElementById('signup-form').classList.add('hidden');
+        document.getElementById('login-form').classList.remove('hidden');
+        
+        // Clear the signup form
+        document.getElementById('signup-form').reset();
+    } else {
+        alert('Username already exists. Please choose a different username.');
+    }
+}
+
+// Handle logout
+function handleLogout() {
+    Auth.logout();
+    showAuth();
+    
+    // Reset forms
+    document.getElementById('login-form').reset();
+    document.getElementById('signup-form').reset();
+    document.getElementById('signup-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('success-message').style.display = 'none';
+}
 
 // Update category options based on transaction type
 function updateCategoryOptions() {
@@ -157,6 +352,9 @@ function addOptionGroup(select, label, options) {
 function handleTransactionSubmit(e) {
     e.preventDefault();
     
+    const user = Auth.getCurrentUser();
+    if (!user) return;
+    
     const type = document.getElementById('transaction-type').value;
     const amount = parseFloat(document.getElementById('amount').value);
     const category = document.getElementById('category').value;
@@ -172,7 +370,7 @@ function handleTransactionSubmit(e) {
         Category: category,
         Date: date,
         Description: description
-    });
+    }, user.UserID);
     
     // Reset form
     document.getElementById('transaction-form').reset();
@@ -188,11 +386,14 @@ function handleTransactionSubmit(e) {
 function handleBudgetSubmit(e) {
     e.preventDefault();
     
+    const user = Auth.getCurrentUser();
+    if (!user) return;
+    
     const category = document.getElementById('budget-category').value;
     const amount = parseFloat(document.getElementById('budget-amount').value);
     
     // Add to database
-    DB.setBudget(category, amount);
+    DB.setBudget(category, amount, user.UserID);
     
     // Reset form
     document.getElementById('budget-form').reset();
@@ -204,7 +405,10 @@ function handleBudgetSubmit(e) {
 
 // Update dashboard with current financial data
 function updateDashboard() {
-    const expenses = DB.getExpenses();
+    const user = Auth.getCurrentUser();
+    if (!user) return;
+    
+    const expenses = DB.getExpenses(user.UserID);
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     
@@ -296,9 +500,12 @@ function updateCategoryChart(transactions) {
 
 // Update budget chart
 function updateBudgetChart() {
+    const user = Auth.getCurrentUser();
+    if (!user) return;
+    
     const ctx = document.getElementById('budget-chart').getContext('2d');
-    const budgets = DB.getBudgets();
-    const expenses = DB.getExpenses();
+    const budgets = DB.getBudgets(user.UserID);
+    const expenses = DB.getExpenses(user.UserID);
     
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
@@ -367,8 +574,11 @@ function updateBudgetChart() {
 
 // Update transactions list
 function updateTransactions() {
+    const user = Auth.getCurrentUser();
+    if (!user) return;
+    
     const transactionsList = document.getElementById('transactions-list');
-    const expenses = DB.getExpenses();
+    const expenses = DB.getExpenses(user.UserID);
     
     // Sort by date (newest first)
     const sortedTransactions = expenses.sort((a, b) => new Date(b.Date) - new Date(a.Date));
@@ -402,9 +612,12 @@ function updateTransactions() {
 
 // Update budget status
 function updateBudgetStatus() {
+    const user = Auth.getCurrentUser();
+    if (!user) return;
+    
     const budgetStatus = document.getElementById('budget-status');
-    const budgets = DB.getBudgets();
-    const expenses = DB.getExpenses();
+    const budgets = DB.getBudgets(user.UserID);
+    const expenses = DB.getExpenses(user.UserID);
     
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
