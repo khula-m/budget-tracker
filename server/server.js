@@ -28,6 +28,34 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+// Function to find available port
+function findAvailablePort(port) {
+    const net = require('net');
+    return new Promise((resolve, reject) => {
+        const server = net.createServer();
+        server.listen(port, () => {
+            server.close(() => {
+                resolve(port);
+            });
+        });
+        server.on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                resolve(findAvailablePort(port + 1));
+            } else {
+                reject(err);
+            }
+        });
+    });
+}
+
+// Start server with available port
+findAvailablePort(PORT)
+    .then(availablePort => {
+        app.listen(availablePort, () => {
+            console.log(`Server running on http://localhost:${availablePort}`);
+            console.log(`Frontend accessible at: http://localhost:${availablePort}`);
+        });
+    })
+    .catch(error => {
+        console.error('Failed to start server:', error);
+    });
