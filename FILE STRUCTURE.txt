@@ -1,0 +1,60 @@
+personal-finance-manager/
+│
+├── backend/
+│   ├── server.js
+│   ├── package.json
+│   ├── package-lock.json
+│   │
+│   ├── database/
+│   │   └── finance.accdb
+│   │
+│   ├── routes/
+│   │   ├── users.js
+│   │   ├── transactions.js
+│   │   ├── budgets.js
+│   │   └── categories.js
+│   │
+│   ├── controllers/
+│   │   ├── usersController.js
+│   │   ├── transactionsController.js
+│   │   ├── budgetsController.js
+│   │   └── categoriesController.js
+│   │
+│   └── middleware/
+│       ├── auth.js
+│       └── validation.js
+│
+├── frontend/
+│   ├── index.html
+│   ├── styles.css
+│   ├── script.js
+│   │
+│   ├── assets/
+│   │   ├── images/
+│   │   │   ├── logo.png
+│   │   │   └── favicon.ico
+│   │   │
+│   │   └── icons/
+│   │       ├── dashboard.svg
+│   │       ├── transactions.svg
+│   │       ├── budgets.svg
+│   │       └── reports.svg
+│   │
+│   └── js/
+│       ├── app.js
+│       ├── dashboard.js
+│       ├── transactions.js
+│       ├── budgets.js
+│       ├── reports.js
+│       ├── charts.js
+│       └── utils.js
+│
+├── docs/
+│   ├── README.md
+│   ├── INSTALLATION.md
+│   ├── API_DOCUMENTATION.md
+│   └── USER_GUIDE.md
+│
+└── config/
+    ├── database.config.js
+    └── app.config.js
