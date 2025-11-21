@@ -25,3 +25,8 @@ A web-based personal finance management application built with HTML, CSS, and Ja
 4. View analytics and charts in the dashboard
 
 ## File Structure
+budget-tracker/
+├── index.html
+├── style.css
+├── script.js
+└── README.md
