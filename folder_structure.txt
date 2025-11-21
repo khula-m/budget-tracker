@@ -1,0 +1,23 @@
+personal-finance-manager/
+├── public/
+│   ├── index.html
+│   ├── style.css
+│   ├── script.js
+│   └── assets/
+│       └── (optional images/icons)
+├── server/
+│   ├── routes/
+│   │   ├── expenses.js
+│   │   ├── budgets.js
+│   │   └── users.js
+│   ├── models/
+│   │   ├── database.js
+│   │   └── queries.js
+│   ├── middleware/
+│   │   └── auth.js
+│   └── server.js
+├── database/
+│   └── finance.accdb (or .mdb)
+├── package.json
+├── package-lock.json
+└── README.md
