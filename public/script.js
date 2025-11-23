@@ -1069,3 +1069,196 @@ window.addEventListener('unhandledrejection', function(e) {
     console.error('Unhandled promise rejection:', e.reason);
     showError('An unexpected error occurred. Please try again.');
 });
+
+// Microsoft Access Database Manager
+const AccessDB = {
+    // Database connection string (adjust path as needed)
+    dbPath: "C:\\path\\to\\your\\PersonalFinanceManager.accdb",
+    
+    // Execute query and return results
+    async executeQuery(query, params = {}) {
+        try {
+            // This would typically connect to a server-side script
+            // that handles the Access database connection
+            const response = await fetch('/api/access-query.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    parameters: params
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Database query failed:', error);
+            throw error;
+        }
+    },
+
+    // User management
+    async loginUser(username, password) {
+        return await this.executeQuery('qryUserLogin', {
+            EnterUsername: username,
+            EnterPassword: password
+        });
+    },
+
+    async registerUser(userData) {
+        const query = `INSERT INTO Users (Username, PasswordHash, Name, Email, Currency) 
+                      VALUES (?, ?, ?, ?, ?)`;
+        return await this.executeQuery(query, [
+            userData.username,
+            userData.password, // In production, hash this!
+            userData.name,
+            userData.email || '',
+            userData.currency || 'ZAR'
+        ]);
+    },
+
+    // Transaction management
+    async getTransactions(userId, limit = 10) {
+        return await this.executeQuery('qryRecentTransactions', {
+            UserID: userId
+        });
+    },
+
+    async addTransaction(transactionData) {
+        const query = `INSERT INTO Transactions (UserID, Type, Amount, CategoryID, TransactionDate, Description) 
+                      VALUES (?, ?, ?, ?, ?, ?)`;
+        return await this.executeQuery(query, [
+            transactionData.userId,
+            transactionData.type,
+            transactionData.amount,
+            transactionData.categoryId,
+            transactionData.date,
+            transactionData.description || ''
+        ]);
+    },
+
+    // Budget management
+    async getBudgets(userId, yearMonth = null) {
+        const currentMonth = yearMonth || new Date().toISOString().slice(0, 7);
+        return await this.executeQuery('qryBudgetStatus', {
+            UserID: userId,
+            YearMonth: currentMonth
+        });
+    },
+
+    async setBudget(budgetData) {
+        // Check if budget exists for this month
+        const checkQuery = `SELECT ID FROM Budgets 
+                           WHERE UserID = ? AND CategoryID = ? AND Format(MonthYear, 'yyyy-mm') = ?`;
+        const existing = await this.executeQuery(checkQuery, [
+            budgetData.userId,
+            budgetData.categoryId,
+            budgetData.monthYear
+        ]);
+
+        if (existing.length > 0) {
+            // Update existing budget
+            const updateQuery = `UPDATE Budgets SET Amount = ? 
+                               WHERE UserID = ? AND CategoryID = ? AND Format(MonthYear, 'yyyy-mm') = ?`;
+            return await this.executeQuery(updateQuery, [
+                budgetData.amount,
+                budgetData.userId,
+                budgetData.categoryId,
+                budgetData.monthYear
+            ]);
+        } else {
+            // Insert new budget
+            const insertQuery = `INSERT INTO Budgets (UserID, CategoryID, Amount, MonthYear) 
+                               VALUES (?, ?, ?, ?)`;
+            return await this.executeQuery(insertQuery, [
+                budgetData.userId,
+                budgetData.categoryId,
+                budgetData.amount,
+                budgetData.monthYear
+            ]);
+        }
+    },
+
+    // Dashboard data
+    async getMonthlySummary(userId, yearMonth = null) {
+        const currentMonth = yearMonth || new Date().toISOString().slice(0, 7);
+        return await this.executeQuery('qryMonthlySummary', {
+            UserID: userId,
+            YearMonth: currentMonth
+        });
+    },
+
+    async getCategorySpending(userId, yearMonth = null) {
+        const currentMonth = yearMonth || new Date().toISOString().slice(0, 7);
+        return await this.executeQuery('qryCategorySpending', {
+            UserID: userId,
+            YearMonth: currentMonth
+        });
+    },
+
+    // Categories
+    async getCategories(userId = null) {
+        if (userId) {
+            const query = `SELECT * FROM Categories WHERE UserID = ? OR IsDefault = True ORDER BY Type, Name`;
+            return await this.executeQuery(query, [userId]);
+        } else {
+            const query = `SELECT * FROM Categories WHERE IsDefault = True ORDER BY Type, Name`;
+            return await this.executeQuery(query);
+        }
+    }
+};
+
+// Updated Authentication for Access DB
+const Auth = {
+    currentUser: null,
+    
+    async login(username, password) {
+        try {
+            const result = await AccessDB.loginUser(username, password);
+            if (result && result.length > 0) {
+                this.currentUser = result[0];
+                localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Login failed:', error);
+            return false;
+        }
+    },
+    
+    async register(userData) {
+        try {
+            await AccessDB.registerUser(userData);
+            return true;
+        } catch (error) {
+            console.error('Registration failed:', error);
+            return false;
+        }
+    },
+    
+    // ... rest of Auth methods remain the same
+    getCurrentUser() {
+        if (this.currentUser) return this.currentUser;
+        const userData = localStorage.getItem('currentUser');
+        if (userData) {
+            this.currentUser = JSON.parse(userData);
+            return this.currentUser;
+        }
+        return null;
+    },
+    
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
+    },
+    
+    isLoggedIn() {
+        return this.getCurrentUser() !== null;
+    }
+};
