@@ -1,0 +1,41 @@
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
+
+$input = json_decode(file_get_contents('php://input'), true);
+$query = $input['query'] ?? '';
+$parameters = $input['parameters'] ?? [];
+
+try {
+    // Database connection
+    $dbPath = "C:\\path\\to\\your\\PersonalFinanceManager.accdb";
+    $connection = new PDO("odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$dbPath;");
+    $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Prepare and execute query
+    $stmt = $connection->prepare($query);
+    
+    // Bind parameters if any
+    $paramIndex = 1;
+    foreach ($parameters as $value) {
+        $stmt->bindValue($paramIndex, $value);
+        $paramIndex++;
+    }
+    
+    $stmt->execute();
+    
+    // Fetch results
+    if (strpos(strtoupper($query), 'SELECT') === 0) {
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($results);
+    } else {
+        echo json_encode(['success' => true, 'affected_rows' => $stmt->rowCount()]);
+    }
+    
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
+}
+?>
